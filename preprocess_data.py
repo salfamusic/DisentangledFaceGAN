@@ -122,7 +122,7 @@ def main():
 					coef = np.squeeze(coef,0)
 
 					# save aligned images and extracted coefficients
-					cv2.imwrite(os.path.join(save_path,'img',file),align_img)
+					cv2.imwrite(os.path.join(save_path,'img',file),rescale_img[:,:,::-1])
 					savemat(os.path.join(save_path,'coeff',file.replace('.png','.mat')),{'coeff':coef})
 
 
