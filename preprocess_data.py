@@ -12,6 +12,8 @@ from scipy.io import loadmat,savemat
 from renderer import face_decoder
 from training.networks_recon import R_Net
 from preprocess.preprocess_utils import *
+from keras.utils import get_file
+import bz2
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
@@ -56,7 +58,7 @@ def main():
 	
 	# Load landmark model
 	landmarks_model_path = unpack_bz2(get_file('shape_predictor_68_face_landmarks.dat.bz2', LANDMARKS_MODEL_URL, cache_subdir='temp'))
-    landmarks_detector = LandmarksDetector(landmarks_model_path)
+	landmarks_detector = LandmarksDetector(landmarks_model_path)
 
 	# Load standard landmarks for alignment
 	lm3D = load_lm3d()
@@ -93,7 +95,7 @@ def main():
 
 					# load images and landmarks
 					image = Image.open(os.path.join(image_path,file))
-					lm = landmarks_detector.get_landmarks(os.path.join(image_path,file))[1]
+					_, lm = next(enumerate(landmarks_detector.get_landmarks(os.path.join(image_path,file)), start=1))
 					lm = np.reshape(lm,[5,2])
 
 					# align image for 3d face reconstruction
