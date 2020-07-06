@@ -98,7 +98,9 @@ def main():
 
 					# load images and landmarks
 					image = Image.open(os.path.join(image_path,file))
-					_, lm = next(enumerate(landmarks_detector.get_landmarks(os.path.join(image_path,file)), start=1))
+					landmarks = landmarks_detector.get_landmarks(os.path.join(image_path,file))
+					_, lm = next(enumerate(landmarks))
+					print(landmarks)
 					lm = np.reshape(lm,[5,2])
 
 					# align image for 3d face reconstruction

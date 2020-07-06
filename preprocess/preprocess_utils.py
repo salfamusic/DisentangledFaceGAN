@@ -127,7 +127,7 @@ def POS(xp,x):
 	A[0:2*npts-1:2,3] = 1
 
 	A[1:2*npts:2,4:7] = x.transpose()
-	A[1:2*npts:2,7] = 1;
+	A[1:2*npts:2,7] = 1
 
 	b = np.reshape(xp.transpose(),[2*npts,1])
 
