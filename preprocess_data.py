@@ -30,6 +30,7 @@ def parse_args():
 
     parser.add_argument('--image_path', type=str, help='Training image path.')
     parser.add_argument('--save_path', type=str, default='./data' ,help='Save path for aligned images and extracted coefficients.')
+	parser.add_arugment('--no_translation', type=bool, default=False)
 
     return parser.parse_args()
 
@@ -108,9 +109,13 @@ def main():
 					align_img_ = np.expand_dims(align_img_,0)
 					coef = sess.run(coeff,feed_dict = {images: align_img_})
 
+					crop = crop_n_rescale_face_region
+
 					# align image for GAN training
 					# eliminate translation and rescale face size to proper scale
-					rescale_img = crop_n_rescale_face_region(align_img,coef) # 256*256*3 RGB image
+					if args.no_translation:
+						crop = crop_n_rescale_no_translation_face_region
+					rescale_img = crop(align_img,coef) # 256*256*3 RGB image
 					coef = np.squeeze(coef,0)
 
 					# save aligned images and extracted coefficients

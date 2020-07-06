@@ -226,3 +226,23 @@ def crop_n_rescale_face_region(image,coeff):
 	res = res.astype(np.uint8)
 
 	return res
+
+
+def crop_n_rescale_no_translation_face_region(image,coeff):
+	tz = coeff[0,256]
+	f = 1015.*512/224
+	cam_pos = 10.
+	scale = 1.22*224/512
+
+	# crop image to 256*256
+	(rows, cols) = image.shape[:2]
+	scale_ = scale*(cam_pos - tz)/cam_pos
+	w = int(cols*scale_)
+	h = int(rows*scale_)
+	res = Image.fromarray(image.astype(np.uint8),'RGB')
+	res = ImageOps.expand(res,border=10,fill = 'black')
+	res = res.crop((round(w/2)-128+10,round(h/2)-128+10,round(w/2)+128+10,round(h/2)+128+10))
+	res = np.array(res)
+	res = res.astype(np.uint8)
+
+	return res
