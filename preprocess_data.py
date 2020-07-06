@@ -14,6 +14,7 @@ from training.networks_recon import R_Net
 from preprocess.preprocess_utils import *
 from keras.utils import get_file
 import bz2
+from argparse import ArgumentParser
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
@@ -25,7 +26,7 @@ config.gpu_options.visible_device_list = '0'
 
 def parse_args():
     desc = "Data Preprocess of DisentangledFaceGAN"
-    parser = argparse.ArgumentParser(description=desc)
+    parser = ArgumentParser(description=desc)
 
     parser.add_argument('--image_path', type=str, help='Training image path.')
     parser.add_argument('--save_path', type=str, default='./data' ,help='Save path for aligned images and extracted coefficients.')
