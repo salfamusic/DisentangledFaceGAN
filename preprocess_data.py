@@ -30,7 +30,8 @@ def parse_args():
 
     parser.add_argument('--image_path', type=str, help='Training image path.')
     parser.add_argument('--save_path', type=str, default='./data' ,help='Save path for aligned images and extracted coefficients.')
-	parser.add_arugment('--no_translation', type=bool, default=False)
+    parser.add_arugment('--no_translation', type=bool, default=False)
+
 
     return parser.parse_args()
 
