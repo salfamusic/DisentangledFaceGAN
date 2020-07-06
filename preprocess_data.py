@@ -15,6 +15,7 @@ from preprocess.preprocess_utils import *
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
+LANDMARKS_MODEL_URL = 'http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2'
 model_continue_path = 'training/pretrained_weights/recon_net'
 R_net_weights = os.path.join(model_continue_path,'FaceReconModel')
 config = tf.ConfigProto()
@@ -25,15 +26,21 @@ def parse_args():
     parser = argparse.ArgumentParser(description=desc)
 
     parser.add_argument('--image_path', type=str, help='Training image path.')
-    parser.add_argument('--lm_path', type=str, help='Deteced landmark path.')
     parser.add_argument('--save_path', type=str, default='./data' ,help='Save path for aligned images and extracted coefficients.')
 
     return parser.parse_args()
 
+def unpack_bz2(src_path):
+    data = bz2.BZ2File(src_path).read()
+    dst_path = src_path[:-4]
+    with open(dst_path, 'wb') as fp:
+        fp.write(data)
+    return dst_path
+
+
 def main():
 	args = parse_args()
 	image_path = args.image_path
-	lm_path = args.lm_path
 	# lm_path = os.path.join(args.image_path,'lm5p') # detected landmarks for training images should be saved in <image_path>/lm5p subfolder
 	
 	# create save path for aligned images and extracted coefficients
@@ -46,6 +53,10 @@ def main():
 	# Load BFM09 face model
 	if not os.path.isfile('./renderer/BFM face model/BFM_model_front_gan.mat'):
 		transferBFM09()
+	
+	# Load landmark model
+	landmarks_model_path = unpack_bz2(get_file('shape_predictor_68_face_landmarks.dat.bz2', LANDMARKS_MODEL_URL, cache_subdir='temp'))
+    landmarks_detector = LandmarksDetector(landmarks_model_path)
 
 	# Load standard landmarks for alignment
 	lm3D = load_lm3d()
@@ -82,9 +93,7 @@ def main():
 
 					# load images and landmarks
 					image = Image.open(os.path.join(image_path,file))
-					if not os.path.isfile(os.path.join(lm_path,file.replace('png','txt'))):
-						continue
-					lm = np.loadtxt(os.path.join(lm_path,file.replace('png','txt')))
+					lm = landmarks_detector.get_landmarks(os.path.join(image_path,file))[1]
 					lm = np.reshape(lm,[5,2])
 
 					# align image for 3d face reconstruction
