@@ -18,7 +18,7 @@ from argparse import ArgumentParser
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
-LANDMARKS_MODEL_URL = 'http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2'
+LANDMARKS_MODEL_URL = 'http://dlib.net/files/shape_predictor_5_face_landmarks.dat.bz2'
 model_continue_path = 'training/pretrained_weights/recon_net'
 R_net_weights = os.path.join(model_continue_path,'FaceReconModel')
 config = tf.ConfigProto()
@@ -58,7 +58,7 @@ def main():
 		transferBFM09()
 	
 	# Load landmark model
-	landmarks_model_path = unpack_bz2(get_file('shape_predictor_68_face_landmarks.dat.bz2', LANDMARKS_MODEL_URL, cache_subdir='temp'))
+	landmarks_model_path = unpack_bz2(get_file('shape_predictor_5_face_landmarks.dat.bz2', LANDMARKS_MODEL_URL, cache_subdir='temp'))
 	landmarks_detector = LandmarksDetector(landmarks_model_path)
 
 	# Load standard landmarks for alignment
