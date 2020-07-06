@@ -239,7 +239,8 @@ def crop_n_rescale_no_translation_face_region(image,coeff):
 	scale_ = scale*(cam_pos - tz)/cam_pos
 	w = int(cols*scale_)
 	h = int(rows*scale_)
-	res = Image.fromarray(image.astype(np.uint8),'RGB')
+	res = cv2.resize(image,(w,h))
+	res = Image.fromarray(res.astype(np.uint8),'RGB')
 	res = ImageOps.expand(res,border=10,fill = 'black')
 	res = res.crop((round(w/2)-128+10,round(h/2)-128+10,round(w/2)+128+10,round(h/2)+128+10))
 	res = np.array(res)
