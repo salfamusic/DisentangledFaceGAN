@@ -85,7 +85,7 @@ def get_landmarks_dlib(image):
     
     for face in faces:
         # nose, left eye, right eye, left mouth, right mouth
-        face_5 = np.stack([face[lm_idx[0],:],np.mean(face[lm_idx[[1:2]],:],0),np.mean(face[lm_idx[[3:4]],:],0),face[lm_idx[5],:],face[lm_idx[6],:]], axis = 0)
+        face_5 = np.stack([face[lm_idx[0],:],np.mean(face[lm_idx[1:2],:],0),np.mean(face[lm_idx[3:4],:],0),face[lm_idx[5],:],face[lm_idx[6],:]], axis = 0)
         face_5 = face_5[[1,2,0,3,4],:]
 
         face_arrs.append(face_5)
