@@ -8,6 +8,7 @@ from PIL import Image,ImageOps
 from array import array
 import cv2
 import dlib
+from imutils import face_utils
 
 
 class LandmarksDetector:
@@ -19,12 +20,12 @@ class LandmarksDetector:
         self.shape_predictor = dlib.shape_predictor(predictor_model_path)
 
     def get_landmarks(self, image):
-        img = dlib.load_rgb_image(image)
-        dets = self.detector(img, 1)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        dets = self.detector(gray, 0)
 
         for detection in dets:
-            face_landmarks = [(item.x, item.y) for item in self.shape_predictor(img, detection).parts()]
-            yield face_landmarks
+            face_landmarks = self.shape_predictor(gray, detection)
+            return face_utils.shape_to_np(face_landmarks)
 
 # Load expression basis provided by Guo et al.,
 # https://github.com/Juyong/3DFace.
