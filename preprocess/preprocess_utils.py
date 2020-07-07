@@ -30,7 +30,10 @@ def get_landmarks(image):
         mouth_left = [mouth_left[0], mouth_left[1]]
         mouth_right = [mouth_right[0], mouth_right[1]]
 
-        face_arrs.append(np.stack([nose, left_eye, right_eye, mouth_left, mouth_right], axis=0))
+        res = np.stack([nose, left_eye, right_eye, mouth_left, mouth_right], axis=0)
+        res = res[[1,2,0,3,4],:]
+
+        face_arrs.append(res)
     
     return face_arrs
 
