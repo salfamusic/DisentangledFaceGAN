@@ -10,7 +10,7 @@ from mtcnn import MTCNN
 from keras.utils import get_file
 import cv2
 import dlib
-import b22
+import bz2
 
 LANDMARKS_MODEL_URL = 'http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2'
 
