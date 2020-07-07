@@ -29,7 +29,7 @@ class LandmarksDetector:
         lms = []
 
         for detection in dets:
-            face_landmarks = [[item.x, item.y] for item in self.shape_predictor(img, detection).parts()]
+            face_landmarks = np.array([[item.x, item.y] for item in self.shape_predictor(img, detection).parts()])
             lms.append(face_landmarks) 
         
         return lms
