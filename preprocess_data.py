@@ -18,7 +18,6 @@ from argparse import ArgumentParser
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
-LANDMARKS_MODEL_URL = 'http://dlib.net/files/shape_predictor_5_face_landmarks.dat.bz2'
 model_continue_path = 'training/pretrained_weights/recon_net'
 R_net_weights = os.path.join(model_continue_path,'FaceReconModel')
 config = tf.ConfigProto()
@@ -30,17 +29,8 @@ def parse_args():
 
     parser.add_argument('--image_path', type=str, help='Training image path.')
     parser.add_argument('--save_path', type=str, default='./data' ,help='Save path for aligned images and extracted coefficients.')
-    parser.add_argument('--no_translation', type=bool, default=False)
-
 
     return parser.parse_args()
-
-def unpack_bz2(src_path):
-    data = bz2.BZ2File(src_path).read()
-    dst_path = src_path[:-4]
-    with open(dst_path, 'wb') as fp:
-        fp.write(data)
-    return dst_path
 
 
 def main():
@@ -59,10 +49,6 @@ def main():
 	if not os.path.isfile('./renderer/BFM face model/BFM_model_front_gan.mat'):
 		transferBFM09()
 	
-	# Load landmark model
-	landmarks_model_path = unpack_bz2(get_file('shape_predictor_5_face_landmarks.dat.bz2', LANDMARKS_MODEL_URL, cache_subdir='temp'))
-	landmarks_detector = LandmarksDetector(landmarks_model_path)
-
 	# Load standard landmarks for alignment
 	lm3D = load_lm3d()
 
@@ -96,33 +82,42 @@ def main():
 				if file.endswith('png'):
 					print(file)
 
-					# load images and landmarks
-					image = Image.open(os.path.join(image_path,file))
-					lm = landmarks_detector.get_landmarks(image)
-					print(lm)
-					lm = np.reshape(lm,[5,2])
+					full_img_path = os.path.join(image_path,file)
 
-					# align image for 3d face reconstruction
-					align_img,_,_ = Preprocess(image,lm,lm3D) # 512*512*3 RGB image
-					align_img = np.array(align_img)
+					# load images
+					image = Image.open(full_img_path)
 
-					align_img_ = align_img[:,:,::-1] #RGBtoBGR
-					align_img_ = cv2.resize(align_img_,(224,224)) # input image to reconstruction network should be 224*224
-					align_img_ = np.expand_dims(align_img_,0)
-					coef = sess.run(coeff,feed_dict = {images: align_img_})
+					# load landmarks
+					landmarks = get_landmarks(full_img_path)
 
-					crop = crop_n_rescale_face_region
+					face = 0
 
-					# align image for GAN training
-					# eliminate translation and rescale face size to proper scale
-					if args.no_translation:
-						crop = crop_n_rescale_no_translation_face_region
-					rescale_img = crop(align_img,coef) # 256*256*3 RGB image
-					coef = np.squeeze(coef,0)
+					for lm in landmarks:
+						face = face + 1
+						lm = np.reshape(lm,[5,2])
 
-					# save aligned images and extracted coefficients
-					cv2.imwrite(os.path.join(save_path,'img',file),rescale_img[:,:,::-1])
-					savemat(os.path.join(save_path,'coeff',file.replace('.png','.mat')),{'coeff':coef})
+						# align image for 3d face reconstruction
+						align_img,_,_ = Preprocess(image,lm,lm3D) # 512*512*3 RGB image
+						align_img = np.array(align_img)
+
+						align_img_ = align_img[:,:,::-1] #RGBtoBGR
+						align_img_ = cv2.resize(align_img_,(224,224)) # input image to reconstruction network should be 224*224
+						align_img_ = np.expand_dims(align_img_,0)
+						coef = sess.run(coeff,feed_dict = {images: align_img_})
+
+						crop = crop_n_rescale_face_region
+
+						# align image for GAN training
+						# eliminate translation and rescale face size to proper scale
+						rescale_img = crop_n_rescale_face_region(align_img,coef) # 256*256*3 RGB image
+						coef = np.squeeze(coef,0)
+
+						# make save name corresponding to face
+						fname = f'{face}_{file}'
+
+						# save aligned images and extracted coefficients
+						cv2.imwrite(os.path.join(save_path,'img',fname),rescale_img[:,:,::-1])
+						savemat(os.path.join(save_path,'coeff',fname.replace('.png','.mat')),{'coeff':coef})
 
 
 if __name__ == '__main__':

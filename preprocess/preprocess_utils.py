@@ -6,26 +6,34 @@ import os
 from scipy.io import loadmat,savemat
 from PIL import Image,ImageOps
 from array import array
+from mtcnn import MTCNN
 import cv2
-import dlib
-from imutils import face_utils
 
 
-class LandmarksDetector:
-    def __init__(self, predictor_model_path):
-        """
-        :param predictor_model_path: path to shape_predictor_68_face_landmarks.dat file
-        """
-        self.detector = dlib.get_frontal_face_detector() # cnn_face_detection_model_v1 also can be used
-        self.shape_predictor = dlib.shape_predictor(predictor_model_path)
+def get_landmarks(image):
+    img = cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB)
+    detector = MTCNN()
+    faces = detector.detect_faces(img)
 
-    def get_landmarks(self, image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        dets = self.detector(gray, 0)
+    face_arrs = []
 
-        for detection in dets:
-            face_landmarks = self.shape_predictor(gray, detection)
-            return face_utils.shape_to_np(face_landmarks)
+    for face in faces:
+        nose = face['keypoints']['nose']
+        left_eye = face['keypoints']['left_eye']
+        right_eye = face['keypoints']['right_eye']
+        mouth_left = face['keypoints']['mouth_left']
+        mouth_right = face['keypoints']['mouth_right']
+
+        nose = [nose[0], nose[1]]
+        left_eye = [left_eye[0], left_eye[1]]
+        right_eye = [right_eye[0], right_eye[1]]
+        mouth_left = [mouth_left[0], mouth_left[1]]
+        mouth_right = [mouth_right[0], mouth_right[1]]
+
+        face_arrs.append([nose, left_eye, right_eye, mouth_left, mouth_right])
+    
+    return face_arrs
+
 
 # Load expression basis provided by Guo et al.,
 # https://github.com/Juyong/3DFace.
@@ -187,6 +195,8 @@ def load_lm3d():
 
 	# calculate 5 facial landmarks using 68 landmarks
 	lm_idx = np.array([31,37,40,43,46,49,55]) - 1
+
+    # nose, left eye, right eye, left mouth, right mouth
 	Lm3D = np.stack([Lm3D[lm_idx[0],:],np.mean(Lm3D[lm_idx[[1,2]],:],0),np.mean(Lm3D[lm_idx[[3,4]],:],0),Lm3D[lm_idx[5],:],Lm3D[lm_idx[6],:]], axis = 0)
 	Lm3D = Lm3D[[1,2,0,3,4],:]
 
