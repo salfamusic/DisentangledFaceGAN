@@ -88,7 +88,7 @@ def main():
 					image = Image.open(full_img_path)
 
 					# load landmarks
-					landmarks = get_landmarks(full_img_path)
+					landmarks = get_landmarks_dlib(full_img_path)
 
 					face = 0
 

@@ -7,10 +7,44 @@ from scipy.io import loadmat,savemat
 from PIL import Image,ImageOps
 from array import array
 from mtcnn import MTCNN
+from keras.utils import get_file
 import cv2
+import dlib
+import b22
+
+LANDMARKS_MODEL_URL = 'http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2'
+
+class LandmarksDetector:
+    def __init__(self, predictor_model_path):
+        """
+        :param predictor_model_path: path to shape_predictor_68_face_landmarks.dat file
+        """
+        self.detector = dlib.get_frontal_face_detector() # cnn_face_detection_model_v1 also can be used
+        self.shape_predictor = dlib.shape_predictor(predictor_model_path)
+
+    def get_landmarks(self, image):
+        img = dlib.load_rgb_image(image)
+        dets = self.detector(img, 1)
+        
+        lms = []
+
+        for detection in dets:
+            face_landmarks = [(item.x, item.y) for item in self.shape_predictor(img, detection).parts()]
+            lms.append(face_landmarks) 
+        
+        return lms
 
 
-def get_landmarks(image):
+
+def unpack_bz2(src_path):
+    data = bz2.BZ2File(src_path).read()
+    dst_path = src_path[:-4]
+    with open(dst_path, 'wb') as fp:
+        fp.write(data)
+    return dst_path
+
+
+def get_landmarks_mtcnn(image):
     img = cv2.cvtColor(cv2.imread(image), cv2.COLOR_BGR2RGB)
     detector = MTCNN()
     faces = detector.detect_faces(img)
@@ -34,6 +68,27 @@ def get_landmarks(image):
         res = res[[1,2,0,3,4],:]
 
         face_arrs.append(res)
+    
+    return face_arrs
+
+    
+def get_landmarks_dlib(image):
+    landmarks_model_path = unpack_bz2(get_file('shape_predictor_68_face_landmarks.dat.bz2',
+        LANDMARKS_MODEL_URL, cache_subdir='temp'))
+    landmarks_detector = LandmarksDetector(landmarks_model_path)
+                  
+    faces = landmarks_detector.get_landmarks(image)
+
+    face_arrs = []
+    # calculate 5 facial landmarks using 68 landmarks
+    lm_idx = np.array([31,37,40,43,46,49,55]) - 1
+    
+    for face in faces:
+        # nose, left eye, right eye, left mouth, right mouth
+        face_5 = np.stack([face[lm_idx[0],:],np.mean(face[lm_idx[[1,2]],:],0),np.mean(face[lm_idx[[3,4]],:],0),face[lm_idx[5],:],face[lm_idx[6],:]], axis = 0)
+        face_5 = face_5[[1,2,0,3,4],:]
+
+        face_arrs.append(face_5)
     
     return face_arrs
 
@@ -193,17 +248,17 @@ def Preprocess(img,lm,lm3D,target_size = 512.):
 
 def load_lm3d():
 
-	Lm3D = loadmat('preprocess/similarity_Lm3D_all.mat')
-	Lm3D = Lm3D['lm']
+    Lm3D = loadmat('preprocess/similarity_Lm3D_all.mat')
+    Lm3D = Lm3D['lm']
 
-	# calculate 5 facial landmarks using 68 landmarks
-	lm_idx = np.array([31,37,40,43,46,49,55]) - 1
+    # calculate 5 facial landmarks using 68 landmarks
+    lm_idx = np.array([31,37,40,43,46,49,55]) - 1
 
     # nose, left eye, right eye, left mouth, right mouth
-	Lm3D = np.stack([Lm3D[lm_idx[0],:],np.mean(Lm3D[lm_idx[[1,2]],:],0),np.mean(Lm3D[lm_idx[[3,4]],:],0),Lm3D[lm_idx[5],:],Lm3D[lm_idx[6],:]], axis = 0)
-	Lm3D = Lm3D[[1,2,0,3,4],:]
+    Lm3D = np.stack([Lm3D[lm_idx[0],:],np.mean(Lm3D[lm_idx[[1,2]],:],0),np.mean(Lm3D[lm_idx[[3,4]],:],0),Lm3D[lm_idx[5],:],Lm3D[lm_idx[6],:]], axis = 0)
+    Lm3D = Lm3D[[1,2,0,3,4],:]
 
-	return Lm3D
+    return Lm3D
 
 # load input images and corresponding 5 landmarks
 def load_img(img_path,lm_path):
