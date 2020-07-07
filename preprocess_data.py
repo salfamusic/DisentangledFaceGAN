@@ -95,6 +95,7 @@ def main():
 					for lm in landmarks:
 						face = face + 1
 						lm = np.reshape(lm,[5,2])
+						print(lm)
 
 						# align image for 3d face reconstruction
 						align_img,_,_ = Preprocess(image,lm,lm3D) # 512*512*3 RGB image
