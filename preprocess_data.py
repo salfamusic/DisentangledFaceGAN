@@ -108,7 +108,7 @@ def main():
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
 
 						with tf.name_scope('FaceRender'):
-							render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,resolution,minibatch_split,progressive=True)
+							render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,256,1,progressive=True)
 							render_img = tf.transpose(render_img,perm=[0,3,1,2])
 							render_mask = tf.transpose(render_mask,perm=[0,3,1,2])
 							render_img = process_reals(render_img, 77., False, [0, 255], [-1, 1])
