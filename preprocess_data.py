@@ -15,6 +15,7 @@ from preprocess.preprocess_utils import *
 from keras.utils import get_file
 import bz2
 from argparse import ArgumentParser
+from training.training_utils import process_reals
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
@@ -105,10 +106,21 @@ def main():
 						align_img_ = cv2.resize(align_img_,(224,224)) # input image to reconstruction network should be 224*224
 						align_img_ = np.expand_dims(align_img_,0)
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
-						render_imgs,render_mask,landmark_p,face_shape_t = Face3D.Reconstruction_Block(coeff,256,1,progressive=False)
 
-						mask = sess.run(render_mask,feed_dict = {images: align_img_})
-						mask = np.reshape(np.array(mask), [1, 1, 256])
+						with tf.name_scope('FaceRender'):
+							render_img,render_mask,render_landmark,render_shape = Face3D.Reconstruction_Block(coeff,res=256,batchsize=1,progressive=False)
+							render_img = tf.transpose(render_img,perm=[0,3,1,2])
+							render_mask = tf.transpose(render_mask,perm=[0,3,1,2])
+							render_img = process_reals(render_img, 77, False, [0,255], [-1,1])
+							render_mask = process_reals(render_mask, 77, False, [-1,1], [-1,1])
+							render_mask = tf.squeeze(render_mask,axis = 1)
+
+							shape1 = tf.expand_dims(render_shape[0],0)
+							shape2 = tf.expand_dims(render_shape[1],0)
+							mask1 = tf.expand_dims(render_mask[0],0)
+							mask2 = tf.expand_dims(render_mask[1],0)
+
+						mask = sess.run(mask1,feed_dict = {images: align_img_})
 						print(mask)
 
 						# align image for GAN training
