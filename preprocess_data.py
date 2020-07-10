@@ -108,7 +108,7 @@ def main():
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
 
 						with tf.name_scope('FaceRender'):
-							render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,256,1,progressive=True)
+							render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,256,1,progressive=False)
 							render_img = tf.transpose(render_img,perm=[0,3,1,2])
 							render_mask = tf.transpose(render_mask,perm=[0,3,1,2])
 							render_img = process_reals(render_img, 77., False, [0, 255], [-1, 1])
@@ -117,6 +117,7 @@ def main():
 							render_mask = tf.squeeze(render_mask,axis = 1)
 
 						mask = sess.run(render_mask,feed_dict = {images: align_img_})
+						lma = sess.run(render_landmark,feed_dict = {images: align_img_})
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
@@ -129,7 +130,8 @@ def main():
 						# save aligned images and extracted coefficients
 						cv2.imwrite(os.path.join(save_path,'img',fname),rescale_img[:,:,::-1])
 						#cv2.imwrite(os.path.join(save_path,'img',f'0_{fname}'),render_img)
-						cv2.imwrite(os.path.join(save_path,'img',f'1_{fname}'),mask)
+						np.save(os.path.join(save_path,'img',f'mask_{fname}.npy'),mask)
+						np.save(os.path.join(save_path,'img',f'lma_{fname}.npy'),lma)
 						#cv2.imwrite(os.path.join(save_path,'img',f'2_{fname}'),render_landmark)
 						savemat(os.path.join(save_path,'coeff',fname.replace('.png','.mat')),{'coeff':coef})
 
