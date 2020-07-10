@@ -105,8 +105,9 @@ def main():
 						align_img_ = cv2.resize(align_img_,(224,224)) # input image to reconstruction network should be 224*224
 						align_img_ = np.expand_dims(align_img_,0)
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
+						a = Face3D.Reconstruction_Block(coeff,256,1,progressive=True)
 
-						render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coef,256,1,progressive=True)
+						render_img,render_mask,render_landmark,_ = sess.run(a,feed_dict = {images: align_img_})
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
