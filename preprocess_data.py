@@ -105,9 +105,9 @@ def main():
 						align_img_ = cv2.resize(align_img_,(224,224)) # input image to reconstruction network should be 224*224
 						align_img_ = np.expand_dims(align_img_,0)
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
-						a = Face3D.Reconstruction_Block(coeff,256,1,progressive=True)
+						render_imgs,render_mask,landmark_p,face_shape_t = Face3D.Reconstruction_Block(coeff,256,1,progressive=True)
 
-						render_img,render_mask,render_landmark,_ = sess.run(a,feed_dict = {images: align_img_})
+						mask = sess.run(render_mask,feed_dict = {images: align_img_})
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
@@ -119,9 +119,9 @@ def main():
 
 						# save aligned images and extracted coefficients
 						cv2.imwrite(os.path.join(save_path,'img',fname),rescale_img[:,:,::-1])
-						cv2.imwrite(os.path.join(save_path,'img',f'0_{fname}'),render_img)
-						cv2.imwrite(os.path.join(save_path,'img',f'1_{fname}'),render_mask)
-						cv2.imwrite(os.path.join(save_path,'img',f'2_{fname}'),render_landmark)
+						#cv2.imwrite(os.path.join(save_path,'img',f'0_{fname}'),render_img)
+						cv2.imwrite(os.path.join(save_path,'img',f'1_{fname}'),mask)
+						#cv2.imwrite(os.path.join(save_path,'img',f'2_{fname}'),render_landmark)
 						savemat(os.path.join(save_path,'coeff',fname.replace('.png','.mat')),{'coeff':coef})
 
 
