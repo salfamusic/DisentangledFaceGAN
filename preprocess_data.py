@@ -108,20 +108,15 @@ def main():
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
 
 						with tf.name_scope('FaceRender'):
-							render_img,render_mask,render_landmark,render_shape = Face3D.Reconstruction_Block(coeff,res=256,batchsize=1,progressive=False)
+							render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,resolution,minibatch_split,progressive=True)
 							render_img = tf.transpose(render_img,perm=[0,3,1,2])
 							render_mask = tf.transpose(render_mask,perm=[0,3,1,2])
-							render_img = process_reals(render_img, 77, False, [0,255], [-1,1])
-							render_mask = process_reals(render_mask, 77, False, [-1,1], [-1,1])
+							render_img = process_reals(render_img, 77., False, [0, 255], [-1, 1])
+							render_mask = process_reals(render_mask, 77., False, [-1, 1], [-1, 1])
+
 							render_mask = tf.squeeze(render_mask,axis = 1)
 
-							shape1 = tf.expand_dims(render_shape[0],0)
-							shape2 = tf.expand_dims(render_shape[1],0)
-							mask1 = tf.expand_dims(render_mask[0],0)
-							mask2 = tf.expand_dims(render_mask[1],0)
-
-						mask = sess.run(mask1,feed_dict = {images: align_img_})
-						print(mask)
+						mask = sess.run(render_mask,feed_dict = {images: align_img_})
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
