@@ -15,6 +15,7 @@ from preprocess.preprocess_utils import *
 from keras.utils import get_file
 import bz2
 from argparse import ArgumentParser
+from training_utils import process_reals
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
@@ -106,7 +107,8 @@ def main():
 						align_img_ = np.expand_dims(align_img_,0)
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
 
-						crop = crop_n_rescale_face_region
+						render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coef,256,1,progressive=True)
+							
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
@@ -118,6 +120,9 @@ def main():
 
 						# save aligned images and extracted coefficients
 						cv2.imwrite(os.path.join(save_path,'img',fname),rescale_img[:,:,::-1])
+						cv2.imwrite(os.path.join(save_path,'img',f'0_{fname}'),render_img)
+						cv2.imwrite(os.path.join(save_path,'img',f'1_{fname}'),render_mask)
+						cv2.imwrite(os.path.join(save_path,'img',f'2_{fname}'),render_landmark)
 						savemat(os.path.join(save_path,'coeff',fname.replace('.png','.mat')),{'coeff':coef})
 
 
