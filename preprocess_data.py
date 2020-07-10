@@ -108,6 +108,7 @@ def main():
 						render_imgs,render_mask,landmark_p,face_shape_t = Face3D.Reconstruction_Block(coeff,256,1,progressive=False)
 
 						mask = sess.run(render_mask,feed_dict = {images: align_img_})
+						print(mask)
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
