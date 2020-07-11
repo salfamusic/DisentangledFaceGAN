@@ -106,18 +106,15 @@ def main():
 						align_img_ = cv2.resize(align_img_,(224,224)) # input image to reconstruction network should be 224*224
 						align_img_ = np.expand_dims(align_img_,0)
 						coef = sess.run(coeff,feed_dict = {images: align_img_})
-
-						with tf.name_scope('FaceRender'):
-							render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,256,1,progressive=False)
-							render_img = tf.transpose(render_img,perm=[0,3,1,2])
-							render_mask = tf.transpose(render_mask,perm=[0,3,1,2])
-							render_img = process_reals(render_img, 77., False, [0, 255], [-1, 1])
-							render_mask = process_reals(render_mask, 77., False, [-1, 1], [-1, 1])
-
-							render_mask = tf.squeeze(render_mask,axis = 1)
+						render_img,render_mask,render_landmark,_ = Face3D.Reconstruction_Block(coeff,256,1,progressive=False)
 
 						mask = sess.run(render_mask,feed_dict = {images: align_img_})
 						lma = sess.run(render_landmark,feed_dict = {images: align_img_})
+
+						imask = (255*mask).astype('uint8')
+                        imask = PIL.Image.fromarray(imask, 'L')
+                        print("Saving mask " + mask_img)
+                        imask.save(os.path.join(save_path,'img',f'mask_{fname}'), 'PNG')
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
