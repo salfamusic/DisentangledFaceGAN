@@ -112,9 +112,9 @@ def main():
 						lma = sess.run(render_landmark,feed_dict = {images: align_img_})
 
 						imask = (255*mask).astype('uint8')
-                        imask = PIL.Image.fromarray(imask, 'L')
-                        print("Saving mask " + mask_img)
-                        imask.save(os.path.join(save_path,'img',f'mask_{fname}'), 'PNG')
+						imask = PIL.Image.fromarray(imask, 'L')
+						print("Saving mask " + mask_img)
+						imask.save(os.path.join(save_path,'img',f'mask_{fname}'), 'PNG')
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
