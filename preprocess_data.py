@@ -16,6 +16,7 @@ from keras.utils import get_file
 import bz2
 from argparse import ArgumentParser
 from training.training_utils import process_reals
+import PIL
 
 # Pretrained face reconstruction model from Deng et al. 19,
 # https://github.com/microsoft/Deep3DFaceReconstruction
@@ -111,10 +112,11 @@ def main():
 						mask = sess.run(render_mask,feed_dict = {images: align_img_})
 						lma = sess.run(render_landmark,feed_dict = {images: align_img_})
 
+						mask_img = os.path.join(save_path,'img',f'mask_{fname}')
 						imask = (255*mask).astype('uint8')
 						imask = PIL.Image.fromarray(imask, 'L')
 						print("Saving mask " + mask_img)
-						imask.save(os.path.join(save_path,'img',f'mask_{fname}'), 'PNG')
+						imask.save(mask_img, 'PNG')
 
 						# align image for GAN training
 						# eliminate translation and rescale face size to proper scale
