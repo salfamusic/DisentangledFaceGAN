@@ -112,6 +112,9 @@ def main():
 						mask = sess.run(render_mask,feed_dict = {images: align_img_})
 						lma = sess.run(render_landmark,feed_dict = {images: align_img_})
 
+						# make save name corresponding to face
+						fname = f'{face}_{file}'
+
 						mask_img = os.path.join(save_path,'img',f'mask_{fname}')
 						imask = (255*mask).astype('uint8')
 						imask = PIL.Image.fromarray(imask, 'L')
@@ -122,9 +125,6 @@ def main():
 						# eliminate translation and rescale face size to proper scale
 						rescale_img = crop_n_rescale_face_region(align_img,coef) # 256*256*3 RGB image
 						coef = np.squeeze(coef,0)
-
-						# make save name corresponding to face
-						fname = f'{face}_{file}'
 
 						# save aligned images and extracted coefficients
 						cv2.imwrite(os.path.join(save_path,'img',fname),rescale_img[:,:,::-1])
